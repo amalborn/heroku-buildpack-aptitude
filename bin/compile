@@ -36,32 +36,22 @@ BUILDPACK_DIR=`cd $(dirname $0); cd ..; pwd`
 BUILD_DIR=$1
 CACHE_DIR=$2
 
-WGET_BUILD="$(mktmpdir wget)"
 DEBOOTSTRAP_BUILD="$(mktmpdir debootstrap)"
 FAKECHROOT_BUILD="$(mktmpdir fakechroot)"
 DEFAULT_DEB_PACKAGES="aptitude git-core"
 
 mkdir -p $BUILD_DIR/.tools/fakechroot
-mkdir -p $CACHE_DIR/.tools/{wget,debootstrap}
+mkdir -p $CACHE_DIR/.tools/{debootstrap}
 
-export PATH=/sbin:/usr/sbin:$PATH:$CACHE_DIR/.tools/wget/bin:$CACHE_DIR/.tools/debootstrap/usr/sbin:$BUILD_DIR/.tools/fakechroot/sbin:$BUILD_DIR/.tools/fakechroot/bin
+export PATH=/sbin:/usr/sbin:$PATH:$CACHE_DIR/.tools/debootstrap/usr/sbin:$BUILD_DIR/.tools/fakechroot/sbin:$BUILD_DIR/.tools/fakechroot/bin
 export DEBOOTSTRAP_DIR=$CACHE_DIR/.tools/debootstrap/usr/share/debootstrap
-
-echo "-----> Fetching and installing wget"
-cd $WGET_BUILD
-curl -O http://ftp.gnu.org/gnu/wget/wget-1.13.4.tar.bz2
-tar jxvf wget-1.13.4.tar.bz2
-cd wget-1.13.4
-./configure --prefix=$CACHE_DIR/.tools/wget --without-ssl
-make
-make install
-echo "wget installed" | indent
 
 echo "-----> Fetching and installing debootstrap"
 cd $DEBOOTSTRAP_BUILD
-wget http://archive.ubuntu.com/ubuntu/pool/main/d/debootstrap/debootstrap_1.0.46.tar.gz
-tar zxvf debootstrap_1.0.46.tar.gz
-cd debootstrap-1.0.46
+DEBOOTSTRAP_VERSION=1.0.67
+curl -OL http://archive.ubuntu.com/ubuntu/pool/main/d/debootstrap/debootstrap_${DEBOOTSTRAP_VERSION}.tar.gz
+tar zxvf debootstrap_${DEBOOTSTRAP_VERSION}.tar.gz
+cd debootstrap-${DEBOOTSTRAP_VERSION}
 DESTDIR=$CACHE_DIR/.tools/debootstrap fakeroot make
 DESTDIR=$CACHE_DIR/.tools/debootstrap fakeroot make install
 echo "debootstrap installed" | indent
